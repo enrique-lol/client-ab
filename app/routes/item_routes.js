@@ -3,8 +3,8 @@ const express = require('express')
 // Passport docs: http://www.passportjs.org/docs/
 const passport = require('passport')
 
-// pull in Mongoose model for nft
-const Nft = require('../models/nft')
+// pull in Mongoose model for item
+const Item = require('../models/item')
 
 // this is a collection of methods that help us detect situations when we need
 // to throw a custom error
@@ -17,7 +17,7 @@ const handle404 = customErrors.handle404
 const requireOwnership = customErrors.requireOwnership
 
 // this is middleware that will remove blank fields from `req.body`, e.g.
-// { nft: { title: '', text: 'foo' } } -> { nft: { text: 'foo' } }
+// { item: { title: '', text: 'foo' } } -> { item: { text: 'foo' } }
 const removeBlanks = require('../../lib/remove_blank_fields')
 // passing this as a second argument to `router.<verb>` will make it
 // so that a token MUST be passed for that route to be available
@@ -28,43 +28,43 @@ const requireToken = passport.authenticate('bearer', { session: false })
 const router = express.Router()
 
 // INDEX
-// GET /nft
-router.get('/nft', requireToken, (req, res, next) => {
-  Nft.find()
-    .then(nft => {
-      // `nft` will be an array of Mongoose documents
+// GET /item
+router.get('/item', (req, res, next) => {
+  Item.find()
+    .then(item => {
+      // `item` will be an array of Mongoose documents
       // we want to convert each one to a POJO, so we use `.map` to
       // apply `.toObject` to each one
-      return nft.map(nft => nft.toObject())
+      return item.map(item => item.toObject())
     })
-    // respond with status 200 and JSON of the nft
-    .then(nft => res.status(200).json({ nft: nft }))
+    // respond with status 200 and JSON of the item
+    .then(item => res.status(200).json({ item: item }))
     // if an error occurs, pass it to the handler
     .catch(next)
 })
 
 // SHOW
-// GET /nft/5a7db6c74d55bc51bdf39793
-router.get('/nft/:id', requireToken, (req, res, next) => {
+// GET /item/5a7db6c74d55bc51bdf39793
+router.get('/item/:id', (req, res, next) => {
   // req.params.id will be set based on the `:id` in the route
-  Nft.findById(req.params.id)
+  Item.findById(req.params.id)
     .then(handle404)
-    // if `findById` is succesful, respond with 200 and "nft" JSON
-    .then(nft => res.status(200).json({ nft: nft.toObject() }))
+    // if `findById` is succesful, respond with 200 and "item" JSON
+    .then(item => res.status(200).json({ item: item.toObject() }))
     // if an error occurs, pass it to the handler
     .catch(next)
 })
 
 // CREATE
-// POST /nft
-router.post('/nft', requireToken, (req, res, next) => {
-  // set owner of new nft to be current user
-  req.body.nft.owner = req.user.id
+// POST /item
+router.post('/item', requireToken, (req, res, next) => {
+  // set owner of new item to be current user
+  req.body.item.owner = req.user.id
 
-  Nft.create(req.body.nft)
-    // respond to succesful `create` with status 201 and JSON of new "nft"
-    .then(nft => {
-      res.status(201).json({ nft: nft.toObject() })
+  Item.create(req.body.item)
+    // respond to succesful `create` with status 201 and JSON of new "item"
+    .then(item => {
+      res.status(201).json({ item: item.toObject() })
     })
     // if an error occurs, pass it off to our error handler
     // the error handler needs the error message and the `res` object so that it
@@ -73,21 +73,21 @@ router.post('/nft', requireToken, (req, res, next) => {
 })
 
 // UPDATE
-// PATCH /nft/5a7db6c74d55bc51bdf39793
-router.patch('/nft/:id', requireToken, removeBlanks, (req, res, next) => {
+// PATCH /item/5a7db6c74d55bc51bdf39793
+router.patch('/item/:id', requireToken, removeBlanks, (req, res, next) => {
   // if the client attempts to change the `owner` property by including a new
   // owner, prevent that by deleting that key/value pair
-  delete req.body.nft.owner
+  delete req.body.item.owner
 
-  Nft.findById(req.params.id)
+  Item.findById(req.params.id)
     .then(handle404)
-    .then(nft => {
+    .then(item => {
       // pass the `req` object and the Mongoose record to `requireOwnership`
       // it will throw an error if the current user isn't the owner
-      requireOwnership(req, nft)
+      requireOwnership(req, item)
 
       // pass the result of Mongoose's `.update` to the next `.then`
-      return nft.updateOne(req.body.nft)
+      return item.updateOne(req.body.item)
     })
     // if that succeeded, return 204 and no JSON
     .then(() => res.sendStatus(204))
@@ -96,15 +96,15 @@ router.patch('/nft/:id', requireToken, removeBlanks, (req, res, next) => {
 })
 
 // DESTROY
-// DELETE /nft/5a7db6c74d55bc51bdf39793
-router.delete('/nft/:id', requireToken, (req, res, next) => {
-  Nft.findById(req.params.id)
+// DELETE /item/5a7db6c74d55bc51bdf39793
+router.delete('/item/:id', requireToken, (req, res, next) => {
+  Item.findById(req.params.id)
     .then(handle404)
-    .then(nft => {
-      // throw an error if current user doesn't own `nft`
-      requireOwnership(req, nft)
-      // delete the nft ONLY IF the above didn't throw
-      nft.deleteOne()
+    .then(item => {
+      // throw an error if current user doesn't own `item`
+      requireOwnership(req, item)
+      // delete the item ONLY IF the above didn't throw
+      item.deleteOne()
     })
     // send back 204 and no content if the deletion succeeded
     .then(() => res.sendStatus(204))

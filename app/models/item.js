@@ -1,6 +1,6 @@
 const mongoose = require('mongoose')
 
-const nftSchema = new mongoose.Schema({
+const itemSchema = new mongoose.Schema({
   title: {
     type: String,
     required: true
@@ -18,6 +18,10 @@ const nftSchema = new mongoose.Schema({
     required: true
   },
   priceEther: {
+    type: String,
+    required: true
+  },
+  owner: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
@@ -26,4 +30,4 @@ const nftSchema = new mongoose.Schema({
   timestamps: true
 })
 
-module.exports = mongoose.model('Nft', nftSchema)
+module.exports = mongoose.model('Item', itemSchema)
