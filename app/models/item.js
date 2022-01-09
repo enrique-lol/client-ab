@@ -9,10 +9,6 @@ const itemSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  artCollection: {
-    type: String,
-    required: false
-  },
   thumbnail: {
     type: String,
     required: true
