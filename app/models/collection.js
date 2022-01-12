@@ -17,7 +17,6 @@ const collectionSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  inCollection: [String],
   owner: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
