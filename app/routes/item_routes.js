@@ -23,12 +23,14 @@ router.get('/item', (req, res, next) => {
     .catch(next)
 })
 
-router.get('/itemsincoll', (req, res, next) => {
-  console.log(req)
+router.get('/itemsincoll/:id', (req, res, next) => {
+  const id = req.params.id
   Item.find()
     .then(item => {
       const array = item.map(item => item.toObject())
-      return array.filter(item => item.collectionId === req.params.id)
+      const response = array.filter(item => item.collectionId === id)
+      console.log(response)
+      return response
     })
     // 200 status B)
     .then(item => res.status(200).json({ item: item }))
