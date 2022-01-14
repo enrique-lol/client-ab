@@ -60,8 +60,6 @@ router.patch('/item/:id', requireToken, removeBlanks, (req, res, next) => {
   Item.findById(req.params.id)
     .then(handle404)
     .then(item => {
-      requireOwnership(req, item)
-
       return item.updateOne(req.body.item)
     })
     .then(() => res.sendStatus(204))
